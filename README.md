@@ -11,6 +11,8 @@ The image installs the `laya[serve]` package, version 0.3.20, from PyPI. It runs
 | `Dockerfile` | Builds the image with PyTorch and `laya[serve]` |
 | `docker-compose.yml` | Runs the service on CPU |
 | `docker-compose.cuda.yml` | Override that runs the service on an NVIDIA GPU |
+| `ui/` | React app with a form for the API |
+| `examples/skill-routing.json` | Request that routes a prompt to a Claude Code skill |
 
 ## Requirements
 
@@ -105,6 +107,29 @@ The response for the request above looks like this, shortened:
 
 Each answer also carries `action.act_probability`. The `routing` object names the checkpoint that answered and the reason for that choice. The server sends text in a non-Latin script or a language other than English to the multilingual checkpoint.
 
+## Use the web form
+
+The `ui` service serves a React app at `http://127.0.0.1:8080`. `docker compose up` starts it after the `laya` service is healthy. The app has these parts:
+
+- An input box. Select "Send as JSON" to send the input as a JSON object instead of a string.
+- A list of questions. For each question, select `choice`, `score` or `noul`, then fill in the name, the instructions and the options.
+- A model selector and an optional API key.
+- A Run button. The results panel shows the answer and a probability bar for each option.
+
+The form shows an error for each missing field and disables Run until you fix them. "Show request" displays the JSON that the form sends.
+
+`laya-serve` sends no CORS headers. For this reason, the browser does not call port 8000 directly. In the container, nginx serves the app and forwards `/v1/` and `/health` to the `laya` service.
+
+To work on the app without Docker, start the `laya` service, then run the Vite dev server:
+
+```bash
+cd ui
+npm install
+npm run dev
+```
+
+The dev server forwards the API to `http://localhost:8000`. Set `LAYA_URL` to use another address.
+
 ## Example: route a prompt to a Claude Code skill
 
 The file `examples/skill-routing.json` classifies a user prompt into one of 10 Claude Code skills, or `none`. The prompt goes in `state.prompt`. This command replaces the prompt and prints the chosen skill:
@@ -124,6 +149,7 @@ Set these variables in your shell or in a `.env` file next to `docker-compose.ym
 | Variable | Default | Effect |
 |---|---|---|
 | `LAYA_PORT` | `8000` | Host port for the service |
+| `LAYA_UI_PORT` | `8080` | Host port for the web form |
 | `LAYA_BIND_ADDRESS` | `127.0.0.1` | Host address that Docker publishes the port on |
 | `LAYA_API_KEY` | empty | When set, every request except `/health` needs `Authorization: Bearer <key>` |
 | `LAYA_PRELOAD` | `1` | `1` loads the checkpoints before the server accepts requests. `0` loads each checkpoint on its first request |

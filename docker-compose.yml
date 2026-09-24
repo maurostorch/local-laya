@@ -23,5 +23,15 @@ services:
     init: true
     restart: unless-stopped
 
+  ui:
+    build: ./ui
+    image: laya-ui:latest
+    ports:
+      - "${LAYA_BIND_ADDRESS:-127.0.0.1}:${LAYA_UI_PORT:-8080}:8080"
+    depends_on:
+      laya:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   laya-model-cache:
