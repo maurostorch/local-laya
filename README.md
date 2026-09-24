@@ -105,6 +105,18 @@ The response for the request above looks like this, shortened:
 
 Each answer also carries `action.act_probability`. The `routing` object names the checkpoint that answered and the reason for that choice. The server sends text in a non-Latin script or a language other than English to the multilingual checkpoint.
 
+## Example: route a prompt to a Claude Code skill
+
+The file `examples/skill-routing.json` classifies a user prompt into one of 10 Claude Code skills, or `none`. The prompt goes in `state.prompt`. This command replaces the prompt and prints the chosen skill:
+
+```bash
+jq --arg p "Start PROJ-5102 for me" '.state.prompt = $p' examples/skill-routing.json \
+  | curl -s localhost:8000/v1/systemone -H 'Content-Type: application/json' -d @- \
+  | jq '{skill: .answers.skill.choice, p: .answers.skill.answer_confidence, risk: .answers.risk.score}'
+```
+
+In a test with 9 prompts, the request chose the correct skill 9 times, with a top probability from 0.85 to 1.0. Option descriptions that name the trigger words, such as "after a PR merged", gave better results than generic descriptions. If the top probability is below about 0.8, ask the user which skill to run. The `needs_skill` and `risk` answers were inconsistent in the same test, so use them only as rough hints.
+
 ## Configuration
 
 Set these variables in your shell or in a `.env` file next to `docker-compose.yml`. Do not commit a `.env` file that holds an API key.

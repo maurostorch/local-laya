@@ -1,0 +1,37 @@
+{
+  "state": {
+    "prompt": "The PR merged this morning, can you clean up the branch and move PROJ-4821 to Testing?"
+  },
+  "questions": {
+    "skill": {
+      "type": "choice",
+      "instructions": "Which Claude Code skill best handles this user prompt?",
+      "criteria": {
+        "start-ticket": "start or pick up a ticket: user says start PROJ-1234 or begin work",
+        "finish-ticket": "after a PR merged: delete branch, clean up, move ticket to Testing or Done",
+        "pr": "create a new pull request from the current branch",
+        "review-pr": "review or summarize someone else pull request",
+        "address-review-comments": "fix review comments left on a pull request",
+        "create-jira-ticket": "file a new Jira ticket, story or bug",
+        "investigate-prod-error": "root-cause a production error, stack trace or Datadog link",
+        "fix-dependabot-alerts-js": "fix Dependabot security alerts in npm dependencies",
+        "monitor-release": "watch a service after a prod release",
+        "tdd": "write tests first, red-green-refactor",
+        "none": "a general question that needs no workflow"
+      }
+    },
+    "needs_skill": {
+      "type": "noul",
+      "instructions": "Does the user ask Claude to run a multi-step engineering workflow?"
+    },
+    "risk": {
+      "type": "score",
+      "instructions": "How risky are the actions this prompt asks for?",
+      "criteria": [
+        "read-only",
+        "changes local files",
+        "changes shared or remote state"
+      ]
+    }
+  }
+}
