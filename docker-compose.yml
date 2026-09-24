@@ -1,0 +1,27 @@
+services:
+  laya:
+    build:
+      context: .
+      args:
+        TORCH_INDEX: ${LAYA_TORCH_INDEX:-cpu}
+    image: laya:0.3.20-${LAYA_TORCH_INDEX:-cpu}
+    ports:
+      # Loopback only: the API has no authentication unless LAYA_API_KEY is set.
+      - "${LAYA_BIND_ADDRESS:-127.0.0.1}:${LAYA_PORT:-8000}:8000"
+    environment:
+      LAYA_DEVICE: ${LAYA_DEVICE:-cpu}
+      # 1 downloads and loads the checkpoints before the server accepts requests.
+      LAYA_PRELOAD: ${LAYA_PRELOAD:-1}
+      # Comma list from english, multilingual, typed-decisions. Empty preloads all three.
+      LAYA_MODELS: ${LAYA_MODELS:-english,multilingual}
+      LAYA_THREADS: ${LAYA_THREADS:-4}
+      OMP_NUM_THREADS: ${LAYA_THREADS:-4}
+      LAYA_API_KEY: ${LAYA_API_KEY:-}
+      LAYA_LOG_LEVEL: ${LAYA_LOG_LEVEL:-info}
+    volumes:
+      - laya-model-cache:/home/laya/.cache/huggingface
+    init: true
+    restart: unless-stopped
+
+volumes:
+  laya-model-cache:
